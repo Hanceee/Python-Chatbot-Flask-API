@@ -1,0 +1,7 @@
+flask
+waitress
+streamlit
+langchain
+python-dotenv
+openai
+faiss-cpu
