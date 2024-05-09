@@ -7,7 +7,7 @@ from langchain_community.chat_message_histories import ChatMessageHistory
 import pymysql.cursors
 
 # Connection Pooling
-connection = pymysql.connect(host='127.0.0.1',
+connection = pymysql.connect(host='153.92.15.11',
                              user='u253378952_admin',
                              password='Popdog_69',
                              database='u253378952_legalaidph',
