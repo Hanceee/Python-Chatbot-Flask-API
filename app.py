@@ -25,7 +25,7 @@ def chat_with_history_api():
     })
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 8080))
+    port = int(os.environ.get('PORT', 10000))  # Default port is 10000 on Render
     if os.getenv("DEBUG") == "True":
         app.run(host='0.0.0.0', port=port, use_reloader=True, debug=True)
     else:
