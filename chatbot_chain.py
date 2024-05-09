@@ -8,9 +8,9 @@ import pymysql.cursors
 
 # Connection Pooling
 connection = pymysql.connect(host='127.0.0.1',
-                             user='root',
-                             password='',
-                             database='shesh',
+                             user='u253378952_admin',
+                             password='Popdog_69',
+                             database='u253378952_legalaidph',
                              cursorclass=pymysql.cursors.DictCursor)
 
 # Fetch configuration data
