@@ -23,7 +23,7 @@ def get_chatbot_configuration(cursor):
 config = get_chatbot_configuration(connection.cursor())
 
 # Reuse TextLoader
-loader = TextLoader("dog.txt")
+loader = TextLoader("familycode.txt")
 documents = loader.load()
 
 # Reuse FAISS vectorstore

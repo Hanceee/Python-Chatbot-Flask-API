@@ -27,7 +27,7 @@ if __name__ == '__main__':
     workers = int(os.getenv("WORKERS", default=4))
     debug = os.getenv("DEBUG", default=False)
     host = os.getenv("HOST", default='0.0.0.0')
-    port = int(os.getenv("PORT", default=8080))
+    port = int(os.getenv("PORT", default=5000))
 
     if debug:
         app.run(host=host, port=port, debug=True)
