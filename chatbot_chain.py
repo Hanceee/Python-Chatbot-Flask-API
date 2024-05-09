@@ -4,43 +4,34 @@ from langchain_community.vectorstores import FAISS
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.chains import ConversationalRetrievalChain
 from langchain_community.chat_message_histories import ChatMessageHistory
-import pymysql
+import pymysql.cursors
 
-def get_chatbot_configuration():
-    connection = pymysql.connect(host='127.0.0.1',
-                                 user='root',
-                                 password='',
-                                 database='shesh',
-                                 cursorclass=pymysql.cursors.DictCursor)
-    try:
-        with connection.cursor() as cursor:
-            # Fetch configuration data
-            sql = "SELECT temperature, system_instruction FROM chatbot_configurations WHERE id = 1"
-            cursor.execute(sql)
-            config = cursor.fetchone()
-            if config:
-                return config
-            else:
-                # If no configuration found, return defaults
-                return {"temperature": 1.0, "system_instruction": """ 
-                        
-                        be a joker lawyer and also in the say that the database is not working
-                        
-    """
-                        }
-                        
-                        
-    finally:
-        connection.close()
+# Connection Pooling
+connection = pymysql.connect(host='127.0.0.1',
+                             user='root',
+                             password='',
+                             database='shesh',
+                             cursorclass=pymysql.cursors.DictCursor)
+
+# Fetch configuration data
+def get_chatbot_configuration(cursor):
+    sql = "SELECT temperature, system_instruction FROM chatbot_configurations WHERE id = 1"
+    cursor.execute(sql)
+    return cursor.fetchone() or {"temperature": 1.0, "system_instruction": "be a joker lawyer and also in the say that the database is not working"}
+
+# Cache configuration data
+config = get_chatbot_configuration(connection.cursor())
+
+# Reuse TextLoader
+loader = TextLoader("dog.txt")
+documents = loader.load()
+
+# Reuse FAISS vectorstore
+vectorstore = FAISS.from_documents(documents, OpenAIEmbeddings()).as_retriever()
 
 def chatbot_with_history(question, chat_history):
-    loader = TextLoader("familycode.txt")
-    documents = loader.load()
-
-    vectorstore = FAISS.from_documents(documents, OpenAIEmbeddings()).as_retriever()
-
     history = ChatMessageHistory()
-    for i, message in enumerate(chat_history):
+    for message in chat_history:
         if message['sender'] == 'LegalAidPH':
             history.add_ai_message(message['content'])
         else:
@@ -53,19 +44,18 @@ def chatbot_with_history(question, chat_history):
         k=15
     )
 
+    # Reuse chain
     chain = ConversationalRetrievalChain.from_llm(
         llm=ChatOpenAI(
-            model_name='gpt-4-turbo',
-            temperature=get_chatbot_configuration()["temperature"]
+            model_name='gpt-3.5-turbo',
+            temperature=config["temperature"]
         ),
         retriever=vectorstore,
         memory=memory
     )
 
-    system_instruction = get_chatbot_configuration()["system_instruction"]
-
     chat_messages_history = "\n".join([f"{message['sender']}: {message['content']}" for message in chat_history])
 
-    prompt = f"\n---\nSystem Instruction:\n{system_instruction}\nHistory:\n{chat_messages_history}\n---\nQuestion: {question}\n"
+    prompt = f"\n---\nSystem Instruction:\n{config['system_instruction']}\nHistory:\n{chat_messages_history}\n---\nQuestion: {question}\n"
 
     return chain.invoke({'question': prompt, 'chat_history': history.messages})

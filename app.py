@@ -1,14 +1,11 @@
 import os
-
 from flask import Flask, request, jsonify
-from waitress import serve
 from chatbot_chain import chatbot_with_history
 from dotenv import load_dotenv
 
 load_dotenv()
 
 app = Flask(__name__)
-
 
 @app.route('/api/chat_with_history', methods=['POST'])
 def chat_with_history_api():
@@ -26,15 +23,14 @@ def chat_with_history_api():
         }
     })
 
-
 if __name__ == '__main__':
-    if env("DEBUG"):
-        app.run(host='0.0.0.0', port=8080, use_reloader=True, debug=True)
-    else:
-        serve(app, host="0.0.0.0", port=8080)
+    workers = int(os.getenv("WORKERS", default=4))
+    debug = os.getenv("DEBUG", default=False)
+    host = os.getenv("HOST", default='0.0.0.0')
+    port = int(os.getenv("PORT", default=8080))
 
-# if __name__ == '__main__':
-#     if os.getenv("DEBUG"):
-#         app.run(host='0.0.0.0', port=8080, use_reloader=True, debug=True)
-#     else:
-#         serve(app, host="0.0.0.0", port=8080)        
+    if debug:
+        app.run(host=host, port=port, debug=True)
+    else:
+        from waitress import serve
+        serve(app, host=host, port=port, threads=workers)
