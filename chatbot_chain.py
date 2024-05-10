@@ -47,7 +47,7 @@ def chatbot_with_history(question, chat_history):
     # Reuse chain
     chain = ConversationalRetrievalChain.from_llm(
         llm=ChatOpenAI(
-            model_name='gpt-3.5-turbo',
+            model_name='gpt-4-turbo',
             temperature=config["temperature"]
         ),
         retriever=vectorstore,
